@@ -12,24 +12,21 @@ function parseReplay(jsonData) {
   const log = jsonData.log;
   const lines = log.split("\n");
   const activeMons = { p1: null, p2: null };
-  const nicknameToSpecies = {}; // Map nicknames to actual species
-  const hazardSetters = { p1: {}, p2: {} }; // Track who set each hazard type
+  const nicknameToSpecies = {}; // Need to map nicknames to actual species
+  const hazardSetters = { p1: {}, p2: {} }; // Trying to track who set each hazard type. Doesn't really work :(
   let currentTurn = 0;
 
   for (const line of lines) {
     const parts = line.split("|");
 
-    // Track turn number
     if (parts[1] === "turn") {
       currentTurn = parseInt(parts[2]);
     }
 
-    // Get format
     if (parts[1] === "tier") {
       result.format = parts[2];
     }
 
-    // Get player names
     if (parts[1] === "player") {
       const player = parts[2];
       const name = parts[3];
@@ -42,13 +39,16 @@ function parseReplay(jsonData) {
       }
     }
 
-    // Get team preview - extract actual species name and initialize team
+    // Team preview
     if (parts[1] === "poke") {
       const player = parts[2];
       const fullInfo = parts[3];
       let speciesName = fullInfo.split(",")[0]; // Get just the species
 
-      // Initialize the team member (will be in team preview order)
+      // I had an issue with Greninja-* / Greninja-Bond. So just remove it
+      speciesName = speciesName.replace("-*", "");
+
+      // This initialize the team member in preview order
       if (!result.players[player].mons[speciesName]) {
         result.players[player].team.push(speciesName);
         result.players[player].mons[speciesName] = {
@@ -150,31 +150,19 @@ function parseReplay(jsonData) {
         baseName = speciesName.split("-Mega")[0].split("-Primal")[0];
       }
 
-      // Store the mapping - always map to base name
+      // Always map to base name
       nicknameToSpecies[nickname] = baseName;
       activeMons[player] = baseName;
-
-      // Add to team if not already there (first time we see this mon)
-      if (!result.players[player].mons[baseName]) {
-        result.players[player].team.push(baseName);
-        result.players[player].mons[baseName] = {
-          kills: 0,
-          died: false,
-          hazardKill: false,
-        };
-      }
     }
 
-    // Track faints - use nickname map to get actual species
+    // Track faints - nickname maps to get actual species
     if (parts[1] === "faint") {
       const playerMon = parts[2].split(":")[0];
       const player = playerMon.substring(0, 2);
       const nickname = parts[2].split(":")[1].trim();
 
-      // Get actual species name from nickname
       const speciesName = nicknameToSpecies[nickname] || nickname;
 
-      // Get the kill source from the last damage line
       const killSource = activeMons._lastKillSource || "";
 
       // Check if this was a hazard kill
@@ -185,20 +173,20 @@ function parseReplay(jsonData) {
         "sticky web",
       ].includes(killSource);
 
-      // Mark as died
+      // Mark dead
       if (result.players[player].mons[speciesName]) {
         result.players[player].mons[speciesName].died = true;
         result.players[player].mons[speciesName].hazardKill = isHazardKill;
       }
 
-      // Credit kill to opponent's active mon
+      // Credit kill to opponent's active mon?
       const opponent = player === "p1" ? "p2" : "p1";
       const killerMon = activeMons[opponent];
       if (killerMon && result.players[opponent].mons[killerMon]) {
         result.players[opponent].mons[killerMon].kills++;
       }
 
-      // Add to kill log
+      // And then add to kill log
       result.killLog.push({
         turn: currentTurn,
         killerMon: killerMon || "",
@@ -208,11 +196,11 @@ function parseReplay(jsonData) {
         killSource: killSource,
       });
 
-      // Clear the kill source
+      // Done, so clear the kill source
       activeMons._lastKillSource = "";
     }
 
-    // Get winner
+    // Get winner!!
     if (parts[1] === "win") {
       result.winner = parts[2];
     }
@@ -228,17 +216,15 @@ function displayResults(data) {
     existing.remove();
   }
 
-  // Create results container
+  // Results container
   const container = document.createElement("div");
   container.id = "ps-parser-results";
   container.className = "ps-parser-results";
 
-  // Build HTML
   let html = '<div class="ps-parser-header">';
   html += "<h2>Match Stats</h2>";
   html += '<div style="display: flex; gap: 10px;">';
 
-  // Get player names for button labels
   const playerNames = Object.entries(data.players).map(([key, player]) => ({
     key: key,
     name: player.name,
@@ -319,12 +305,10 @@ function displayResults(data) {
   container.innerHTML = html;
   document.body.appendChild(container);
 
-  // Add event listeners
   document.getElementById("ps-parser-close").addEventListener("click", () => {
     container.remove();
   });
 
-  // Add copy buttons for each player
   const playerEntries = Object.entries(data.players);
   playerEntries.forEach(([playerKey, player]) => {
     document
@@ -336,7 +320,6 @@ function displayResults(data) {
 }
 
 function copyPlayerToClipboard(playerKey, player) {
-  // Create tab-separated text for single player
   let text = "";
 
   for (const mon of player.team) {
@@ -374,7 +357,6 @@ window.addEventListener("load", () => {
     btn.disabled = true;
 
     try {
-      // Get current URL and append .json
       let url = window.location.href.replace(/\/$/, "");
       url += ".json";
 
@@ -401,7 +383,6 @@ window.addEventListener("load", () => {
 });
 
 function showAbout() {
-  // Remove any existing about panel
   const existing = document.getElementById("ps-parser-about");
   if (existing) {
     existing.remove();
@@ -419,6 +400,8 @@ function showAbout() {
 
   html += '<div style="padding: 10px 0;">';
   html += "<p><strong>By:</strong> Christian / Blister</p>";
+  html +=
+    "<p><strong><a href='https://www.loom.com/share/71aeeaafbd4a43b680006562854ad032' target='_blank'>How it works</a></strong></p>";
   html +=
     '<p><strong>Showdown:</strong> <a href="https://pokemonshowdown.com/users/blisterinsun" target="_blank" style="color: #2563eb;">blisterinsun</a></p>';
   html +=
