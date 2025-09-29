@@ -1,0 +1,32 @@
+# Pokemon Showdown Replay Parser
+
+Chrome extension to extract battle stats from Pokemon Showdown replays.
+
+## Features
+
+- Parse team compositions
+- Track kills per Pokemon
+- View kill timeline
+- Export data to clipboard
+
+## Installation
+
+1. Download/clone this repo
+2. Open `chrome://extensions/`
+3. Enable Developer Mode
+4. Click "Load unpacked" and select the folder
+
+## Usage
+
+1. Navigate to any Pokemon Showdown replay
+2. Click "Extract Stats" button (top-right)
+3. Copy individual player stats
+
+## License
+
+MIT
+
+## FAQ
+
+Q: How is this different to Porygon?
+A: If Porygon shows you the results in Discord, this will show you the results in game. Polypaster will also show you what turn the action happened

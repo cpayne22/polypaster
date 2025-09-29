@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PS Replay Parser - Debug</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #1f2937;
+        color: #f3f4f6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+      }
+
+      .controls {
+        background: #374151;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      button:disabled {
+        background: #6b7280;
+        cursor: not-allowed;
+      }
+
+      button.copy {
+        background: #10b981;
+      }
+
+      button.copy:hover {
+        background: #059669;
+      }
+
+      .results {
+        background: #374151;
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      .teams {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 15px;
+      }
+
+      .team h3 {
+        margin: 0 0 10px 0;
+        color: #60a5fa;
+        font-size: 18px;
+        border-bottom: 2px solid #3b82f6;
+        padding-bottom: 5px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        background: #1f2937;
+      }
+
+      table th {
+        background: #4b5563;
+        padding: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: #f3f4f6;
+        border-bottom: 2px solid #6b7280;
+      }
+
+      table td {
+        padding: 10px;
+        border-bottom: 1px solid #4b5563;
+        color: #d1d5db;
+      }
+
+      table td.alive {
+        color: #10b981;
+        font-weight: 600;
+      }
+
+      table td.died {
+        color: #ef4444;
+        font-weight: 600;
+      }
+
+      table tr:hover {
+        background: #374151;
+      }
+
+      .info {
+        margin-bottom: 15px;
+        color: #9ca3af;
+      }
+
+      .info strong {
+        color: #f3f4f6;
+      }
+
+      pre {
+        background: #1f2937;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 12px;
+        color: #d1d5db;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Polypaster - Showdown Replay Parser - Debug Page</h1>
+      <p>
+        Sometimes its easier to debug the battle code in its own page. Otherwise
+        you can safely delete this.
+      </p>
+
+      <div class="controls">
+        <button id="parseBtn">Parse Hardcoded Data</button>
+        <button id="copyBtn" class="copy">Copy to Clipboard</button>
+      </div>
+
+      <div id="results" class="results"></div>
+    </div>
+    <script src="content.js"></script>
+
+    <script>
+      // HARDCODED REPLAY DATA - From your Showdown replay, just add ".json" to the end.
+      // eg:      https://replay.pokemonshowdown.com/gen9natdexdraft-2451354010
+      // becomes: https://replay.pokemonshowdown.com/gen9natdexdraft-2451354010.json
+      // then copy / paste inbetween the brackets
+      const SAMPLE_DATA = {
+        id: "gen9natdexdraft-2451354010",
+        format: "[Gen 9] NatDex Draft",
+        players: ["Davo2544", "radiant_reploid"],
+        log: '|j|\u2606Davo2544\n|j|\u2606radiant_reploid\n|t:|1759108168\n|gametype|singles\n|player|p1|Davo2544|marley|\n|player|p2|radiant_reploid|iris-gen5bw2|\n|gen|9\n|tier|[Gen 9] NatDex Draft\n|rule|Tera Type Preview: Tera Types are shown at Team Preview\n|rule|Sleep Clause Mod: Limit one foe put to sleep\n|rule|OHKO Clause: OHKO moves are banned\n|rule|Evasion Clause: Evasion abilities, items, and moves are banned\n|rule|Evasion Abilities Clause: Evasion abilities are banned\n|rule|Evasion Items Clause: Evasion items are banned\n|rule|Evasion Moves Clause: Evasion moves are banned\n|rule|Endless Battle Clause: Forcing endless battles is banned\n|rule|HP Percentage Mod: HP is shown in percentages\n|raw|<div class="infobox"><details class="readmore" open><summary><strong>1 custom rule:<\/strong><\/summary> Tera Type Preview<\/details><\/div>\n|clearpoke\n|poke|p1|Lopunny, F|\n|poke|p1|Bisharp, F|\n|poke|p1|Mimikyu, M|\n|poke|p1|Chandelure, F|\n|poke|p1|Scizor, M|\n|poke|p1|Toxapex, F|\n|poke|p2|Alakazam, M|\n|poke|p2|Skeledirge, F|\n|poke|p2|Gligar, M|\n|poke|p2|Scyther, M|\n|poke|p2|Sneasler, F|\n|poke|p2|Indeedee-F, F|\n|raw|Davo2544\'s Tera Types:<br \/><psicon pokemon="lopunny" \/><psicon type="Normal" \/> \/ <psicon pokemon="bisharp" \/><psicon type="Dark" \/> \/ <psicon pokemon="mimikyu" \/><psicon type="Dark" \/> \/ <psicon pokemon="chandelure" \/><psicon type="Ghost" \/> \/ <psicon pokemon="scizor" \/><psicon type="Bug" \/> \/ <psicon pokemon="toxapex" \/><psicon type="Poison" \/>\n|raw|radiant_reploid\'s Tera Types:<br \/><psicon pokemon="alakazam" \/><psicon type="Psychic" \/> \/ <psicon pokemon="skeledirge" \/><psicon type="Fire" \/> \/ <psicon pokemon="gligar" \/><psicon type="Ground" \/> \/ <psicon pokemon="scyther" \/><psicon type="Dark" \/> \/ <psicon pokemon="sneasler" \/><psicon type="Fighting" \/> \/ <psicon pokemon="indeedeef" \/><psicon type="Psychic" \/>\n|teampreview\n|c|\u2606Davo2544|you dont wanna play my mega diancie latias triple ub team?\n|c|\u2606radiant_reploid|FAWWWWKKK no LOL\n|c|\u2606radiant_reploid|You mind gettin the bot I\'m on mobile\n|c|\u2606Davo2544|uh how\n|j| PorygonTheBot\n|c| PorygonTheBot|glhf :)\n|c|\u2606Davo2544|i did it\n|c|\u2606radiant_reploid|Appreciate it\n|c|\u2606Davo2544|glhf!\n|c|\u2606radiant_reploid|You too\n|\n|t:|1759108283\n|teamsize|p1|6\n|teamsize|p2|6\n|start\n|switch|p1a: Lace|Lopunny, F|100\/100\n|switch|p2a: Zoro|Scyther, M|100\/100\n|turn|1\n|\n|t:|1759108294\n|detailschange|p1a: Lace|Lopunny-Mega, F\n|-mega|p1a: Lace|Lopunny|Lopunnite\n|move|p1a: Lace|Triple Axel|p2a: Zoro\n|-supereffective|p2a: Zoro\n|-damage|p2a: Zoro|86\/100\n|-supereffective|p2a: Zoro\n|-damage|p2a: Zoro|60\/100\n|-supereffective|p2a: Zoro\n|-damage|p2a: Zoro|21\/100\n|-hitcount|p2a: Zoro|3\n|move|p2a: Zoro|Dual Wingbeat|p1a: Lace|[miss]\n|-miss|p2a: Zoro|p1a: Lace\n|\n|upkeep\n|turn|2\n|c|\u2606Davo2544|outplayed\n|c|\u2606radiant_reploid|Comedic game\n|c|\u2606Davo2544|whyd that do so little\n|\n|t:|1759108318\n|switch|p2a: Susie|Skeledirge, F, shiny|100\/100\n|move|p1a: Lace|Return|p2a: Susie\n|-damage|p2a: Susie|65\/100\n|\n|upkeep\n|turn|3\n|c|\u2606Davo2544|oh youre eviolite bastard lol\n|\n|t:|1759108331\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|move|p2a: Susie|Yawn|p1a: Groal the Great\n|-start|p1a: Groal the Great|move: Yawn|[of] p2a: Susie\n|\n|upkeep\n|turn|4\n|\n|t:|1759108335\n|switch|p1a: Last Judge|Chandelure, F, shiny|100\/100\n|move|p2a: Susie|Slack Off|p2a: Susie\n|-heal|p2a: Susie|100\/100\n|\n|upkeep\n|turn|5\n|\n|t:|1759108391\n|move|p1a: Last Judge|Toxic|p2a: Susie\n|-status|p2a: Susie|tox\n|move|p2a: Susie|Shadow Ball|p1a: Last Judge\n|-supereffective|p1a: Last Judge\n|-damage|p1a: Last Judge|15\/100\n|-unboost|p1a: Last Judge|spd|1\n|\n|-damage|p2a: Susie|94\/100 tox|[from] psn\n|upkeep\n|turn|6\n|c|\u2606Davo2544|ow\n|\n|t:|1759108450\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|switch|p2a: LinkedIn|Indeedee-F, F|100\/100\n|-fieldstart|move: Psychic Terrain|[from] ability: Psychic Surge|[of] p2a: LinkedIn\n|\n|upkeep\n|turn|7\n|\n|t:|1759108473\n|move|p1a: Groal the Great|Baneful Bunker|p1a: Groal the Great\n|-singleturn|p1a: Groal the Great|move: Protect\n|move|p2a: LinkedIn|Baton Pass|p2a: LinkedIn\n|\n|t:|1759108481\n|switch|p2a: Lancer|Gligar, M, shiny|100\/100|[from] Baton Pass\n|\n|upkeep\n|turn|8\n|\n|t:|1759108499\n|switch|p1a: Lace|Lopunny-Mega, F|100\/100\n|move|p2a: Lancer|Knock Off|p1a: Lace\n|-resisted|p1a: Lace\n|-damage|p1a: Lace|92\/100\n|\n|upkeep\n|turn|9\n|\n|t:|1759108579\n|switch|p2a: Susie|Skeledirge, F, shiny|94\/100 tox\n|move|p1a: Lace|Return|p2a: Susie\n|-damage|p2a: Susie|60\/100 tox\n|\n|-damage|p2a: Susie|54\/100 tox|[from] psn\n|upkeep\n|turn|10\n|\n|t:|1759108588\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|move|p2a: Susie|Yawn|p1a: Groal the Great\n|-start|p1a: Groal the Great|move: Yawn|[of] p2a: Susie\n|\n|-damage|p2a: Susie|42\/100 tox|[from] psn\n|upkeep\n|-enditem|p2a: Susie|Sitrus Berry|[eat]\n|-heal|p2a: Susie|67\/100 tox|[from] item: Sitrus Berry\n|turn|11\n|\n|t:|1759108610\n|switch|p1a: Trobbio|Bisharp, F|100\/100\n|-ability|p1a: Trobbio|Pressure\n|move|p2a: Susie|Shadow Ball|p1a: Trobbio\n|-resisted|p1a: Trobbio\n|-damage|p1a: Trobbio|88\/100\n|\n|-damage|p2a: Susie|48\/100 tox|[from] psn\n|upkeep\n|turn|12\n|\n|t:|1759108632\n|switch|p2a: Lancer|Gligar, M, shiny|100\/100\n|move|p1a: Trobbio|Knock Off|p2a: Lancer\n|-damage|p2a: Lancer|74\/100\n|-enditem|p2a: Lancer|Eviolite|[from] move: Knock Off|[of] p1a: Trobbio\n|\n|upkeep\n|turn|13\n|\n|t:|1759108640\n|move|p2a: Lancer|Roost|p2a: Lancer\n|-heal|p2a: Lancer|100\/100\n|-singleturn|p2a: Lancer|move: Roost\n|move|p1a: Trobbio|Stealth Rock|p2a: Lancer\n|-sidestart|p2: radiant_reploid|move: Stealth Rock\n|\n|-fieldend|move: Psychic Terrain\n|upkeep\n|turn|14\n|\n|t:|1759108648\n|switch|p1a: Lace|Lopunny-Mega, F|92\/100\n|move|p2a: Lancer|Knock Off|p1a: Lace\n|-resisted|p1a: Lace\n|-damage|p1a: Lace|84\/100\n|\n|upkeep\n|turn|15\n|\n|t:|1759108670\n|move|p1a: Lace|Triple Axel|p2a: Lancer\n|-supereffective|p2a: Lancer\n|-damage|p2a: Lancer|79\/100\n|-supereffective|p2a: Lancer\n|-damage|p2a: Lancer|37\/100\n|-supereffective|p2a: Lancer\n|-damage|p2a: Lancer|0 fnt\n|faint|p2a: Lancer\n|-hitcount|p2: Lancer|3\n|\n|upkeep\n|c|\u2606Davo2544|wait is zoro an undertale i thought your team was one piece lol\n|\n|t:|1759108708\n|switch|p2a: GODZAMN|Alakazam, M|100\/100\n|turn|16\n|\n|t:|1759108720\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|detailschange|p2a: GODZAMN|Alakazam-Mega, M\n|-mega|p2a: GODZAMN|Alakazam|Alakazite\n|-ability|p2a: GODZAMN|Regenerator|Trace|[from] ability: Trace|[of] p1a: Groal the Great\n|move|p2a: GODZAMN|Charge Beam|p1a: Groal the Great\n|-supereffective|p1a: Groal the Great\n|-damage|p1a: Groal the Great|65\/100\n|-boost|p2a: GODZAMN|spa|1\n|\n|-heal|p1a: Groal the Great|71\/100|[from] item: Black Sludge\n|upkeep\n|turn|17\n|c|\u2606radiant_reploid|Nah Zoro was one piece the dirge and gligar were deltarune\n|\n|t:|1759108746\n|switch|p1a: Green Prince|Scizor, M, shiny|100\/100\n|move|p2a: GODZAMN|Expanding Force|p1a: Green Prince\n|-resisted|p1a: Green Prince\n|-damage|p1a: Green Prince|68\/100\n|\n|-heal|p1a: Green Prince|74\/100|[from] item: Leftovers\n|upkeep\n|turn|18\n|\n|t:|1759108810\n|switch|p2a: Zoro|Scyther, M|21\/100\n|-damage|p2a: Zoro|0 fnt|[from] Stealth Rock\n|faint|p2a: Zoro\n|move|p1a: Green Prince|U-turn|p2: Zoro|[notarget]\n|-fail|p1a: Green Prince\n|\n|-heal|p1a: Green Prince|80\/100|[from] item: Leftovers\n|upkeep\n|\n|t:|1759108828\n|switch|p2a: Susie|Skeledirge, F, shiny|48\/100 tox\n|-damage|p2a: Susie|24\/100 tox|[from] Stealth Rock\n|turn|19\n|\n|t:|1759108845\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|move|p2a: Susie|Slack Off|p2a: Susie\n|-heal|p2a: Susie|74\/100 tox\n|\n|-damage|p2a: Susie|68\/100 tox|[from] psn\n|upkeep\n|turn|20\n|\n|t:|1759108848\n|move|p2a: Susie|Yawn|p1a: Groal the Great\n|-start|p1a: Groal the Great|move: Yawn|[of] p2a: Susie\n|move|p1a: Groal the Great|Scald|p2a: Susie\n|-supereffective|p2a: Susie\n|-damage|p2a: Susie|37\/100 tox\n|\n|-damage|p2a: Susie|25\/100 tox|[from] psn\n|upkeep\n|turn|21\n|\n|t:|1759108868\n|switch|p1a: Trobbio|Bisharp, F|88\/100\n|-ability|p1a: Trobbio|Pressure\n|move|p2a: Susie|Shadow Ball|p1a: Trobbio\n|-resisted|p1a: Trobbio\n|-crit|p1a: Trobbio\n|-damage|p1a: Trobbio|66\/100\n|\n|-damage|p2a: Susie|7\/100 tox|[from] psn\n|upkeep\n|turn|22\n|\n|t:|1759108875\n|move|p1a: Trobbio|Pursuit|p2a: Susie\n|-supereffective|p2a: Susie\n|-damage|p2a: Susie|0 fnt\n|faint|p2a: Susie\n|\n|upkeep\n|\n|t:|1759108885\n|switch|p2a: AKI|Sneasler, F|100\/100\n|-damage|p2a: AKI|95\/100|[from] Stealth Rock\n|turn|23\n|\n|t:|1759108907\n|switch|p1a: Last Judge|Chandelure, F, shiny|15\/100\n|move|p2a: AKI|Dire Claw|p1a: Last Judge\n|-resisted|p1a: Last Judge\n|-damage|p1a: Last Judge|0 fnt\n|-status|p2a: AKI|brn|[from] ability: Flame Body|[of] p1a: Last Judge\n|faint|p1a: Last Judge\n|\n|-damage|p2a: AKI|89\/100 brn|[from] brn\n|upkeep\n|c|\u2606Davo2544|yippee\n|c|\u2606radiant_reploid|Yeah\n|\n|t:|1759108942\n|switch|p1a: Groal the Great|Toxapex, F|100\/100\n|turn|24\n|c|\u2606Davo2544|its been so long since i won a week won\n|c|\u2606Davo2544|one\n|\n|t:|1759108964\n|move|p2a: AKI|Swords Dance|p2a: AKI\n|-boost|p2a: AKI|atk|2\n|move|p1a: Groal the Great|Scald|p2a: AKI\n|-damage|p2a: AKI|66\/100 brn\n|\n|-damage|p2a: AKI|60\/100 brn|[from] brn\n|upkeep\n|turn|25\n|\n|t:|1759108971\n|move|p1a: Groal the Great|Baneful Bunker|p1a: Groal the Great\n|-singleturn|p1a: Groal the Great|move: Protect\n|move|p2a: AKI|Dire Claw|p1a: Groal the Great\n|-activate|p1a: Groal the Great|move: Protect\n|\n|-damage|p2a: AKI|54\/100 brn|[from] brn\n|upkeep\n|turn|26\n|\n|t:|1759108976\n|move|p2a: AKI|Swords Dance|p2a: AKI\n|-boost|p2a: AKI|atk|2\n|move|p1a: Groal the Great|Scald|p2a: AKI\n|-damage|p2a: AKI|29\/100 brn\n|\n|-damage|p2a: AKI|23\/100 brn|[from] brn\n|upkeep\n|turn|27\n|\n|t:|1759108985\n|move|p1a: Groal the Great|Baneful Bunker|p1a: Groal the Great\n|-singleturn|p1a: Groal the Great|move: Protect\n|move|p2a: AKI|Dire Claw|p1a: Groal the Great\n|-activate|p1a: Groal the Great|move: Protect\n|\n|-damage|p2a: AKI|17\/100 brn|[from] brn\n|upkeep\n|turn|28\n|\n|t:|1759108987\n|move|p2a: AKI|Dire Claw|p1a: Groal the Great\n|-resisted|p1a: Groal the Great\n|-damage|p1a: Groal the Great|81\/100\n|move|p1a: Groal the Great|Recover|p1a: Groal the Great\n|-heal|p1a: Groal the Great|100\/100\n|\n|-damage|p2a: AKI|11\/100 brn|[from] brn\n|upkeep\n|turn|29\n|\n|t:|1759108995\n|move|p2a: AKI|Dire Claw|p1a: Groal the Great\n|-resisted|p1a: Groal the Great\n|-crit|p1a: Groal the Great\n|-damage|p1a: Groal the Great|69\/100\n|-status|p1a: Groal the Great|par\n|move|p1a: Groal the Great|Scald|p2a: AKI\n|-damage|p2a: AKI|0 fnt\n|faint|p2a: AKI\n|\n|-heal|p1a: Groal the Great|75\/100 par|[from] item: Black Sludge\n|upkeep\n|\n|t:|1759109000\n|switch|p2a: LinkedIn|Indeedee-F, F|100\/100\n|-damage|p2a: LinkedIn|88\/100|[from] Stealth Rock\n|-fieldstart|move: Psychic Terrain|[from] ability: Psychic Surge|[of] p2a: LinkedIn\n|turn|30\n|\n|t:|1759109021\n|move|p1a: Groal the Great|Baneful Bunker|p1a: Groal the Great\n|-singleturn|p1a: Groal the Great|move: Protect\n|move|p2a: LinkedIn|Baton Pass|p2a: LinkedIn\n|\n|t:|1759109023\n|switch|p2a: GODZAMN|Alakazam-Mega, M|100\/100|[from] Baton Pass\n|-damage|p2a: GODZAMN|88\/100|[from] Stealth Rock\n|-ability|p2a: GODZAMN|Regenerator|Trace|[from] ability: Trace|[of] p1a: Groal the Great\n|\n|-heal|p1a: Groal the Great|81\/100 par|[from] item: Black Sludge\n|upkeep\n|turn|31\n|\n|t:|1759109034\n|move|p2a: GODZAMN|Charge Beam|p1a: Groal the Great\n|-supereffective|p1a: Groal the Great\n|-damage|p1a: Groal the Great|45\/100 par\n|-boost|p2a: GODZAMN|spa|1\n|move|p1a: Groal the Great|Toxic|p2a: GODZAMN\n|-status|p2a: GODZAMN|tox\n|\n|-heal|p1a: Groal the Great|51\/100 par|[from] item: Black Sludge\n|-damage|p2a: GODZAMN|82\/100 tox|[from] psn\n|upkeep\n|turn|32\n|\n|t:|1759109037\n|move|p1a: Groal the Great|Baneful Bunker|p1a: Groal the Great\n|-singleturn|p1a: Groal the Great|move: Protect\n|move|p2a: GODZAMN|Expanding Force|p1a: Groal the Great\n|-activate|p1a: Groal the Great|move: Protect\n|\n|-heal|p1a: Groal the Great|58\/100 par|[from] item: Black Sludge\n|-damage|p2a: GODZAMN|70\/100 tox|[from] psn\n|upkeep\n|turn|33\n|\n|t:|1759109039\n|move|p2a: GODZAMN|Expanding Force|p1a: Groal the Great\n|-supereffective|p1a: Groal the Great\n|-damage|p1a: Groal the Great|0 fnt\n|faint|p1a: Groal the Great\n|\n|-damage|p2a: GODZAMN|52\/100 tox|[from] psn\n|upkeep\n|c|\u2606radiant_reploid|Yeah that\'s game\n|\n|t:|1759109052\n|switch|p1a: Green Prince|Scizor, M, shiny|80\/100\n|turn|34\n|\n|t:|1759109055\n|move|p2a: GODZAMN|Expanding Force|p1a: Green Prince\n|-resisted|p1a: Green Prince\n|-damage|p1a: Green Prince|17\/100\n|move|p1a: Green Prince|Roost|p1a: Green Prince\n|-heal|p1a: Green Prince|67\/100\n|-singleturn|p1a: Green Prince|move: Roost\n|\n|-heal|p1a: Green Prince|73\/100|[from] item: Leftovers\n|-damage|p2a: GODZAMN|28\/100 tox|[from] psn\n|upkeep\n|turn|35\n|\n|t:|1759109066\n|switch|p1a: Trobbio|Bisharp, F|66\/100\n|-ability|p1a: Trobbio|Pressure\n|move|p2a: GODZAMN|Expanding Force|p1a: Trobbio\n|-immune|p1a: Trobbio\n|\n|-damage|p2a: GODZAMN|0 fnt|[from] psn\n|faint|p2a: GODZAMN\n|detailschange|p2: GODZAMN|Alakazam, M|[silent]\n|upkeep\n|\n|t:|1759109067\n|switch|p2a: LinkedIn|Indeedee-F, F|88\/100\n|-damage|p2a: LinkedIn|76\/100|[from] Stealth Rock\n|turn|36\n|\n|t:|1759109071\n|move|p2a: LinkedIn|Mystical Fire|p1a: Trobbio\n|-supereffective|p1a: Trobbio\n|-damage|p1a: Trobbio|37\/100\n|-unboost|p1a: Trobbio|spa|1\n|move|p1a: Trobbio|Knock Off|p2a: LinkedIn\n|-supereffective|p2a: LinkedIn\n|-damage|p2a: LinkedIn|0 fnt\n|-enditem|p2a: LinkedIn|Terrain Extender|[from] move: Knock Off|[of] p1a: Trobbio\n|faint|p2a: LinkedIn\n|\n|win|Davo2544\n|l| PorygonTheBot\n|c|\u2606Davo2544|ggs\n|c|\u2606radiant_reploid|Gg\n|l|\u2606radiant_reploid\n|player|p2|\n|c|\u2606Davo2544|sorry bout the hax\n',
+        uploadtime: 1759109071,
+        views: 85,
+        formatid: "gen9natdexdraft",
+        rating: null,
+        private: 0,
+        password: null,
+      };
+
+      document.getElementById("parseBtn").addEventListener("click", () => {
+        parsedData = parseReplay(SAMPLE_DATA);
+        displayResults(parsedData);
+      });
+
+      document.getElementById("copyBtn").addEventListener("click", () => {
+        if (parsedData) {
+          copyToClipboard(parsedData);
+        } else {
+          alert("There's no results.  Try and parse the data first");
+        }
+      });
+
+      window.addEventListener("load", () => {
+        parsedData = parseReplay(SAMPLE_DATA);
+        displayResults(parsedData);
+      });
+    </script>
+  </body>
+</html>
