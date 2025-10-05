@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Polypaster",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tired of tracking KOs in Showdown? Me too. Counting faints by hand made me want to faint",
   "icons": { "16": "logo-16.png", "48": "logo-48.png", "128": "logo-128.png" },
   "permissions": ["activeTab"],

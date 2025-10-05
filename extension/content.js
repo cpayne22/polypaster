@@ -357,7 +357,7 @@ window.addEventListener("load", () => {
     btn.disabled = true;
 
     try {
-      let url = window.location.href.replace(/\/$/, "");
+      let url = window.location.href.split("?")[0].replace(/\/$/, "");
       url += ".json";
 
       const response = await fetch(url);
@@ -406,7 +406,7 @@ function showAbout() {
     '<p><strong>Showdown:</strong> <a href="https://pokemonshowdown.com/users/blisterinsun" target="_blank" style="color: #2563eb;">blisterinsun</a></p>';
   html +=
     '<p><strong>GitHub:</strong> <a href="https://github.com/cpayne22/polypaster" target="_blank" style="color: #2563eb;">cpayne22/polypaster</a></p>';
-  html += "<p><strong>Version:</strong> 1.0.0</p>";
+  html += "<p><strong>Version:</strong> 1.0.1</p>";
   html += "</div>";
 
   aboutPanel.innerHTML = html;
