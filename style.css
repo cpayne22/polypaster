@@ -146,3 +146,33 @@
 .ps-parser-team table tr:hover {
   background: #f9fafb;
 }
+
+.ps-parser-update-button {
+  position: fixed;
+  top: 110px;
+  right: 10px;
+  z-index: 10000;
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.ps-parser-update-button:hover {
+  background: #047857;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

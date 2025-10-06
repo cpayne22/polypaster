@@ -28,5 +28,17 @@ MIT
 
 ## FAQ
 
-Q: How is this different to Porygon?
-A: If Porygon shows you the results in Discord, this will show you the results in game. Polypaster will also show you what turn the action happened
+Q: How is this different from Porygon?
+A: Porygon posts results to Discord. Polypaster shows results directly on the replay page with a clickable turn-by-turn kill timeline.
+
+Q: Does this track the same things as Porygon?
+A: Almost. Polypaster handles Mega/Primal evolution correctly but doesn't track Zoroark/Illusion or self-KO moves (Explosion, Self-Destruct, Memento, Final Gambit, Healing Wish, Lunar Dance). These will show as "Unknown" in the killer column - check the turn number to see what happened.
+
+Q: Will this work with my league's custom rules?
+A: No. Polypaster uses standard kill attribution. It doesn't have Porygon's configurable rules for suicide kills, Destiny Bond, forfeits, etc.
+
+Q: Does it work on private replays?
+A: Yes, as long as you can access the replay URL.
+
+Q: I found a bug. Where do I report it?
+A: [[GitHub Issues link](https://github.com/cpayne22/polypaster/issues)] or contact blisterinsun on Showdown. (Make sure to include the replay link)

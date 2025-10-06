@@ -1,4 +1,4 @@
-// Wait for page to load
+const currentVersion = "1.0.0";
 
 function parseReplay(jsonData) {
   // Parse the log
@@ -337,8 +337,37 @@ function copyPlayerToClipboard(playerKey, player) {
   });
 }
 
+async function checkForUpdates() {
+  try {
+    const response = await fetch(
+      "https://api.github.com/repos/cpayne22/polypaster/releases/latest"
+    );
+    const data = await response.json();
+    const latestVersion = data.tag_name.replace("v", "");
+
+    if (latestVersion !== currentVersion) {
+      showUpdateButton(latestVersion, data.html_url);
+    }
+  } catch (error) {
+    // Fail silent
+    //console.log("Update check failed:", error);
+  }
+}
+
+function showUpdateButton(version, url) {
+  const updateBtn = document.createElement("button");
+  updateBtn.id = "ps-parser-update-btn";
+  updateBtn.textContent = `v${version} Available`;
+  updateBtn.className = "ps-parser-update-button";
+  document.body.appendChild(updateBtn);
+
+  updateBtn.addEventListener("click", () => {
+    window.open(url, "_blank");
+  });
+}
+
 window.addEventListener("load", () => {
-  // Create button
+  checkForUpdates();
   const btn = document.createElement("button");
   btn.id = "ps-parser-btn";
   btn.textContent = "Extract Stats";
@@ -406,7 +435,7 @@ function showAbout() {
     '<p><strong>Showdown:</strong> <a href="https://pokemonshowdown.com/users/blisterinsun" target="_blank" style="color: #2563eb;">blisterinsun</a></p>';
   html +=
     '<p><strong>GitHub:</strong> <a href="https://github.com/cpayne22/polypaster" target="_blank" style="color: #2563eb;">cpayne22/polypaster</a></p>';
-  html += "<p><strong>Version:</strong> 1.0.1</p>";
+  html += "<p><strong>Version:</strong> " + currentVersion + "</p>";
   html += "</div>";
 
   aboutPanel.innerHTML = html;
